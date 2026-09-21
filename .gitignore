@@ -1,0 +1,35 @@
+# Local credentials and environment files
+/app/config/database.php
+/app/config/dragonpay.php
+/includes/dbconnect.php
+/includes/dbconnect_prod.php
+/dbconnect.php
+/dbconnect_prod.php
+/database_prod.php
+.env
+*.env
+
+# Uploaded and exported data
+/uploads/
+/uploads/*
+*.sql
+*.csv
+
+# Logs, caches, and temporary files
+error_log
+*.log
+*.tmp
+*.temp
+*.bak
+*.backup
+*.dump
+
+# Local OS and editor files
+desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
