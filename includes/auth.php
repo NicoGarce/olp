@@ -3,18 +3,9 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/dbconnect.php';
+require_once __DIR__ . '/../app/config/database.php';
 // Admin users live in the main UPHSL database.
 // Payment transactions continue to use the separate mysqli connection above.
-if (!function_exists('getDBConnection')) {
-    $candidates = [
-        __DIR__ . '/../app/config/database.php',
-        __DIR__ . '/../../uphsledu/app/config/database.php',
-        'C:/xampp/htdocs/uphsledu/app/config/database.php',
-    ];
-    foreach ($candidates as $c) {
-        if (is_file($c)) { require_once $c; break; }
-    }
-}
 function olp_getUsersPDO(){
     static $pdo = null;
     if ($pdo) return $pdo;
