@@ -3,8 +3,8 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/dbconnect.php';
-// OLP users now live in uphsledu_onlinepayment (independent from uphsledu_main)
-// Prefer local onlinepayment PDO; fallback to legacy getDBConnection if needed
+// Admin users live in the main UPHSL database.
+// Payment transactions continue to use the separate mysqli connection above.
 if (!function_exists('getDBConnection')) {
     $candidates = [
         __DIR__ . '/../app/config/database.php',
@@ -18,13 +18,13 @@ if (!function_exists('getDBConnection')) {
 function olp_getUsersPDO(){
     static $pdo = null;
     if ($pdo) return $pdo;
-    // Use the shared database configuration so local and production credentials stay aligned.
+    // Use the shared connection for the existing UPHSL users table.
     try {
-        $dbHost = defined('ONLINE_PAYMENT_DB_HOST') ? ONLINE_PAYMENT_DB_HOST : 'localhost';
-        $dbName = defined('ONLINE_PAYMENT_DB_NAME') ? ONLINE_PAYMENT_DB_NAME : 'uphsledu_onlinepayment';
-        $dbUser = defined('ONLINE_PAYMENT_DB_USER') ? ONLINE_PAYMENT_DB_USER : 'root';
-        $dbPass = defined('ONLINE_PAYMENT_DB_PASS') ? ONLINE_PAYMENT_DB_PASS : '';
-        $pdo = new PDO("mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4", $dbUser, $dbPass, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+        if (function_exists('getDBConnection')) {
+            $pdo = getDBConnection();
+        } else {
+            $pdo = null;
+        }
         // ensure users table exists (light check)
         $pdo->exec("CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
