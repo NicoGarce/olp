@@ -18,9 +18,13 @@ if (!function_exists('getDBConnection')) {
 function olp_getUsersPDO(){
     static $pdo = null;
     if ($pdo) return $pdo;
-    // Try onlinepayment first (independent)
+    // Use the shared database configuration so local and production credentials stay aligned.
     try {
-        $pdo = new PDO("mysql:host=localhost;dbname=uphsledu_onlinepayment;charset=utf8mb4", "root", "", [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+        $dbHost = defined('ONLINE_PAYMENT_DB_HOST') ? ONLINE_PAYMENT_DB_HOST : 'localhost';
+        $dbName = defined('ONLINE_PAYMENT_DB_NAME') ? ONLINE_PAYMENT_DB_NAME : 'uphsledu_onlinepayment';
+        $dbUser = defined('ONLINE_PAYMENT_DB_USER') ? ONLINE_PAYMENT_DB_USER : 'root';
+        $dbPass = defined('ONLINE_PAYMENT_DB_PASS') ? ONLINE_PAYMENT_DB_PASS : '';
+        $pdo = new PDO("mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4", $dbUser, $dbPass, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
         // ensure users table exists (light check)
         $pdo->exec("CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,

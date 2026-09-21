@@ -141,7 +141,7 @@ a{color:var(--blue);font-weight:700;text-decoration:none}
     </div>
     <div class="field"><label><i class="fa-solid fa-lock"></i> Password</label><input type="password" name="password" required placeholder="••••••••"></div>
     <button type="submit" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Sign In Securely</button>
-    <div class="note">OLP users in <code>uphsledu_onlinepayment.users</code> with <code>employee_number</code> (super_admin only). Protected by CSRF &amp; rate limiting.<br><a href="<?= $payments_base ?>">Back to OLP Hub</a> • <a href="/uphsledu/auth/login">Main Site Login</a></div>
+    <br><a href="<?= $payments_base ?>">Back to OLP Hub</a> • <a href="/uphsledu/auth/login">Main Site Login</a></div>
   </form>
 </div>
 </body>
