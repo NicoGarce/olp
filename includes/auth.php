@@ -11,8 +11,8 @@ function olp_getUsersPDO(){
     if ($pdo) return $pdo;
     // Use the shared connection for the existing UPHSL users table.
     try {
-        if (function_exists('getDBConnection')) {
-            $pdo = getDBConnection();
+        if (function_exists('getMainDBConnection')) {
+            $pdo = getMainDBConnection();
         } else {
             $pdo = null;
         }
