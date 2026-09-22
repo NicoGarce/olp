@@ -5,7 +5,9 @@ paymentsRequireAdmin();
 require_once __DIR__ . '/../includes/header.php';
 $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 $payBase = $baseUrl . $payments_base;
+$homeUrl = rtrim($payBase, '/') . '/';
 $links = [
+  'home' => ['label'=>'Home — Landing Page','sub'=>'Index • All payment options','url'=>$homeUrl],
   'guest' => ['label'=>'New Enrollee','sub'=>'Locator verification','url'=>$payBase.'guest'],
   'guestold_student' => ['label'=>'Enrolled','sub'=>'Student number','url'=>$payBase.'guestold_student'],
   'guestold' => ['label'=>'Other Payment','sub'=>'No ID required','url'=>$payBase.'guestold'],
@@ -27,7 +29,7 @@ $links = [
   </div>
   <p style="color:var(--muted); margin:0 0 16px; font-size:13.5px">Scan to open the payment page directly. Each QR has the UPHS logo in the center and the payment type label below.</p>
 
-  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px" class="qr-grid">
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px" class="qr-grid">
     <?php foreach($links as $key=>$info): ?>
     <div class="qr-card" style="background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; text-align:center; box-shadow:0 8px 24px rgba(15,32,64,.06); display:flex; flex-direction:column; align-items:center; gap:12px">
       <div>
@@ -54,6 +56,7 @@ $links = [
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const qrData = {
+  'home': "<?= addslashes($links['home']['url']) ?>",
   'guest': "<?= addslashes($links['guest']['url']) ?>",
   'guestold_student': "<?= addslashes($links['guestold_student']['url']) ?>",
   'guestold': "<?= addslashes($links['guestold']['url']) ?>"
@@ -124,7 +127,7 @@ function downloadQR(key, filename){
       ctx.fillStyle = '#0f2040';
       ctx.font = '800 26px Inter, sans-serif';
       ctx.textAlign = 'center';
-      const labels = {'guest':'New Enrollee','guestold_student':'Enrolled','guestold':'Other Payment'};
+      const labels = {'home':'Home — Landing Page','guest':'New Enrollee','guestold_student':'Enrolled','guestold':'Other Payment'};
       ctx.fillText(labels[key]||key, 330, 690);
       ctx.fillStyle = '#667085';
       ctx.font = '600 14px Inter, sans-serif';
@@ -157,7 +160,8 @@ function printQR(key){
 }
 </script>
 <style>
-@media(max-width:900px){ .qr-grid{grid-template-columns:1fr !important} }
+@media(max-width:1100px){ .qr-grid{grid-template-columns:repeat(2,1fr) !important} }
+@media(max-width:600px){ .qr-grid{grid-template-columns:1fr !important} }
 @media print{ .admin-tabs, .pay-header, .pay-footer{display:none} }
 </style>
 

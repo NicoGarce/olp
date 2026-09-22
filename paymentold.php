@@ -187,7 +187,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="field"><label><?= $type==='new'?'Locator Number':($type==='enrolled'?'Student Number':'Reference (optional)') ?></label><input type="text" name="locno" id="locno" value="<?= htmlspecialchars($locno ?: $studentno) ?>" <?= $type!=='other'?'readonly style="background:#eef2ff;color:var(--blue);font-weight:800;text-align:center"':'' ?> placeholder="<?= $type==='other'?'Optional' : '' ?>"></div>
           </div>
 
-          <div class="field" id="field-contact"><label>Contact Number <small style="font-weight:600;color:var(--muted)">(will be appended to payer name)</small></label><input type="text" name="contact_no" id="contact_no" value="<?= htmlspecialchars($_POST['contact_no'] ?? '') ?>" placeholder="e.g., 09123456789" maxlength="20" inputmode="numeric" autocomplete="tel"></div>
+          <div class="field" id="field-contact"><label>Contact Number <span style="color:var(--err)">*</span> <small style="font-weight:600;color:var(--muted)">(will be appended to payer name)</small></label><input type="text" name="contact_no" id="contact_no" value="<?= htmlspecialchars($_POST['contact_no'] ?? '') ?>" placeholder="e.g., 09123456789" maxlength="20" inputmode="numeric" autocomplete="tel" required></div>
 
           <div class="field" id="field-email"><label>Email Address <span style="color:var(--err)">*</span></label><input type="email" name="email" id="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="receipt will be sent here" required></div>
 
@@ -272,7 +272,53 @@ function buildDesc(){
   if(desc) desc.value=txt;
   return txt;
 }
-document.getElementById('payForm')?.addEventListener('submit', function(){ buildDesc(); });
+document.getElementById('payForm')?.addEventListener('submit', function(e){
+  buildDesc();
+  const firstInvalid = (function(){
+    const checks = [
+      {id:'amount', fieldId:'field-amount'},
+      {id:'descselect', fieldId:'field-particulars'},
+      {id:'syfrom', fieldId:'field-sy'},
+      {id:'sem', fieldId:'field-sem'},
+      {id:'payee_name', fieldId:'field-payee'},
+      {id:'email', fieldId:'field-email'},
+    ];
+    for(const c of checks){
+      const el=document.getElementById(c.id);
+      if(!el) continue;
+      if(c.id==='descselect' && el.disabled) continue;
+      if(c.id==='descselect'){
+        const oth=document.getElementById('desc_others');
+        if((el.value||'').trim()==='' && (!oth || (oth.value||'').trim()==='')){
+          return {el, fieldId:c.fieldId};
+        }
+        continue;
+      }
+      const v=(el.value||'').trim();
+      if(!v) return {el, fieldId:c.fieldId};
+      if(el.type==='email' && !el.checkValidity()) return {el, fieldId:c.fieldId};
+      if(c.id==='amount' && (isNaN(parseFloat(v)) || parseFloat(v)<=0)) return {el, fieldId:c.fieldId};
+    }
+    const gate=document.getElementById('reviewGate');
+    if(gate && gate.style.display!=='none'){
+      const chk=document.getElementById('confirmReview');
+      if(chk && !chk.checked) return {el:chk, fieldId:'reviewGate'};
+    }
+    return null;
+  })();
+  if(firstInvalid){
+    e.preventDefault(); e.stopPropagation();
+    const box = document.getElementById(firstInvalid.fieldId) || firstInvalid.el.closest('.field') || firstInvalid.el;
+    const y = box.getBoundingClientRect().top + window.scrollY - 110;
+    window.scrollTo({top:y, behavior:'smooth'});
+    box.classList.add('field-error','shake');
+    setTimeout(()=> box.classList.remove('shake'), 520);
+    setTimeout(()=> box.classList.remove('field-error'), 2600);
+    setTimeout(()=>{ try{ firstInvalid.el.focus({preventScroll:true}); }catch(_){ firstInvalid.el.focus(); } if(firstInvalid.el.select) try{firstInvalid.el.select();}catch(_){} }, 360);
+    if(window._updateSeq) window._updateSeq();
+    return false;
+  }
+});
 
 // Dynamic summary + review gate (Pay Now appears only after review)
 (function(){
@@ -301,18 +347,29 @@ document.getElementById('payForm')?.addEventListener('submit', function(){ build
     set('sum-email', email);
     set('sum-sy', (sy||sem) ? (sy + (sy&&sem?' • ':'') + sem) : '—');
   }
+  function syncParticularsRequired(){
+    const sel=document.getElementById('descselect');
+    const oth=document.getElementById('desc_others');
+    if(!sel || !oth) return;
+    if(sel.disabled) return;
+    const othHas = (oth.value||'').trim()!=='';
+    if(othHas){ sel.removeAttribute('required'); sel.setCustomValidity(''); } else { sel.setAttribute('required',''); }
+  }
   function isAllRequiredFilled(){
+    syncParticularsRequired();
     const a=document.getElementById('amount')?.value?.trim()||'';
     const n=parseFloat(a); const amountOk = a!=='' && !isNaN(n) && n>0;
     const sel=document.getElementById('descselect')?.value?.trim()||'';
     const other=document.getElementById('desc_others')?.value?.trim()||'';
     const partOk = sel!=='' || other!=='';
-    const syOk = document.getElementById('syfrom')?.value?.trim()!==''; 
-    const semOk = document.getElementById('sem')?.value?.trim()!==''; 
+    const syOk = document.getElementById('syfrom')?.value?.trim()!=='';
+    const semOk = document.getElementById('sem')?.value?.trim()!=='';
     const payee=document.getElementById('payee_name')?.value?.trim()||'';
+    const contactEl=document.getElementById('contact_no');
+    const contactOk = contactEl && contactEl.value.trim()!=='';
     const emailEl=document.getElementById('email');
     const emailOk = emailEl && emailEl.value.trim()!=='' && emailEl.checkValidity();
-    return amountOk && partOk && syOk && semOk && payee!=='' && emailOk;
+    return amountOk && partOk && syOk && semOk && payee!=='' && contactOk && emailOk;
   }
   let gateWasVisible=false;
   function updatePayGate(){
@@ -491,7 +548,69 @@ document.getElementById('payForm')?.addEventListener('submit', function(){ build
 })();
 </script>
 
+<script>
+(function(){
+  const hint=document.getElementById('payBtnHint');
+  function getFirstInvalidForHint(){
+    const ids=['amount','descselect','syfrom','sem','payee_name','contact_no','email'];
+    for(const id of ids){
+      const el=document.getElementById(id);
+      if(!el) continue;
+      if(id==='descselect' && el.disabled) continue;
+      if(id==='descselect'){
+        const oth=document.getElementById('desc_others');
+        if((el.value||'').trim()==='' && (!oth || (oth.value||'').trim()==='')) return {el, fid:'field-particulars'};
+      }
+      if((el.value||'').trim()==='') return {el, fid: el.closest('.field')?.id || 'field-'+id};
+      if(el.type==='email' && !el.checkValidity()) return {el, fid:'field-email'};
+      if(id==='amount' && (isNaN(parseFloat(el.value)) || parseFloat(el.value)<=0)) return {el, fid:'field-amount'};
+    }
+    const gate=document.getElementById('reviewGate');
+    if(gate && gate.style.display!=='none'){
+      const chk=document.getElementById('confirmReview');
+      if(chk && !chk.checked) return {el:chk, fid:'reviewGate'};
+    }
+    return null;
+  }
+  if(hint){
+    hint.style.cursor='pointer';
+    hint.title='Tap to jump to the next required field';
+    hint.addEventListener('click', ()=>{
+      const inv=getFirstInvalidForHint();
+      if(!inv) return;
+      const box=document.getElementById(inv.fid) || inv.el.closest('.field') || inv.el;
+      const y=box.getBoundingClientRect().top + window.scrollY - 110;
+      window.scrollTo({top:y, behavior:'smooth'});
+      box.classList.add('field-error','shake');
+      setTimeout(()=> box.classList.remove('shake'),520);
+      setTimeout(()=> box.classList.remove('field-error'),2600);
+      setTimeout(()=>{ try{ inv.el.focus({preventScroll:true}); }catch(_){ inv.el.focus(); } },360);
+      if(window._updateSeq) window._updateSeq();
+    });
+  }
+  const form=document.getElementById('payForm');
+  if(form){
+    form.addEventListener('invalid', (e)=>{
+      e.preventDefault();
+      const t=e.target;
+      const box=t.closest ? (t.closest('.field') || t.closest('#reviewGate') || t) : t;
+      const y=box.getBoundingClientRect().top + window.scrollY - 110;
+      window.scrollTo({top:y, behavior:'smooth'});
+      box.classList.add('field-error','shake');
+      setTimeout(()=> box.classList.remove('shake'),520);
+      setTimeout(()=> box.classList.remove('field-error'),2600);
+      setTimeout(()=>{ try{ t.focus({preventScroll:true}); }catch(_){ t.focus(); } },360);
+      if(window._updateSeq) window._updateSeq();
+    }, true);
+  }
+})();
+</script>
 <style>
+.field-error input, .field-error select{border-color:var(--err) !important;background:#fef2f2 !important;box-shadow:0 0 0 3px rgba(224,36,36,.14) !important}
+.field-error label{color:var(--err) !important}
+.shake{animation:fieldShake .42s ease}
+@keyframes fieldShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+#payBtnHint:hover{border-color:var(--blue) !important;background:#eef2ff !important;color:var(--blue) !important}
 @media(max-width:900px){ .checkout-grid{grid-template-columns:1fr !important} }
 /* sequential guidance - steady highlight, no blink */
 .seq-next{position:relative}
