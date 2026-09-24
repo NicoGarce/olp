@@ -750,22 +750,6 @@ $is_admin_tools = function_exists('olp_isAdmin') && olp_isAdmin();
     <a href="<?= $payments_base ?>guestold" class="btn btn-primary no-print" style="margin-top:14px; background:var(--blue); color:#fff; width:100%; justify-content:center; border:none">Pay Other Fees</a>
   </div>
 </div>
-
-<div class="tabs-navigation tabs-navigation--bottom no-print" role="tablist" style="justify-content:center; position:static; margin:20px -20px 0; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px; box-shadow:0 4px 12px rgba(15,32,64,.05)">
-  <button class="tab-btn" data-tab="new">New Enrollee</button>
-  <button class="tab-btn active" data-tab="enrolled">Enrolled</button>
-  <button class="tab-btn" data-tab="other">Other Payment</button>
-</div>
-<div class="section after-payment" style="margin-top:14px">
-  <h3 style="margin:0 0 8px; font-size:16px">After payment</h3>
-  <ul style="margin:0 0 0 18px; color:var(--muted); font-size:13.5px; line-height:1.7">
-    <li>You’ll be redirected to DragonPay to complete payment.</li>
-    <li>Receipt is sent to the email you entered — keep your Transaction ID.</li>
-    <li><strong style="color:var(--text)">Present a screenshot of the DragonPay confirmation to the cashier to claim official receipt</strong> — save or screenshot the success page and show it at the cashier window.</li>
-    <li>For help: Accounting (02) 779-5310 — have your Transaction ID ready.</li>
-  </ul>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 function activateTab(tab){
@@ -924,15 +908,6 @@ document.querySelectorAll('.print-date').forEach(el=>{
       }, 100);
     });
   });
-  // also reveal after-payment section subtly
-  const after = document.querySelector('.after-payment');
-  if(after){
-    after.style.opacity='0'; after.style.transform='translateY(12px)'; after.style.transition='opacity .5s ease, transform .5s ease';
-    const aio = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if(e.isIntersecting){ after.style.opacity='1'; after.style.transform='translateY(0)'; aio.unobserve(after); } });
-    }, {threshold:0.2});
-    aio.observe(after);
-  }
 })();
 
 function showToast(msg){
