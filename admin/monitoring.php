@@ -127,6 +127,7 @@ while ($row = mysqli_fetch_assoc($statusResult)) {
   <a href="<?= $payments_base ?>admin/users">Users</a>
   <a href="<?= $payments_base ?>admin/students">Student Management</a>
   <a href="<?= $payments_base ?>admin/monitoring" class="active">Payment Monitoring</a>
+  <a href="<?= $payments_base ?>admin/school_years">School Years</a>
   <a href="<?= $payments_base ?>admin/qr">QR Codes</a>
   <a href="<?= $payments_base ?>admin/backup">Backup Portal</a>
   <a href="<?= $payments_base ?>admin/logout" class="admin-tab-logout">Logout</a>

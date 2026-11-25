@@ -7,11 +7,13 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 // --- Payments DB (LOCAL) ---
 require_once __DIR__ . '/dbconnect.php';
 require_once __DIR__ . '/campus_table_manager.php';
+require_once __DIR__ . '/school_years.php';
 
 if (isset($con)) {
     @mysqli_set_charset($con, 'utf8mb4');
     ensureCampusTablesExist($con);
     ensureTmpStudentTablesExist($con);
+    ensureSchoolYearsTable($con);
 }
 
 // --- Base path for this standalone hub ---

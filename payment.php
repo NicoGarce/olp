@@ -121,6 +121,9 @@ if ($type==='new') {
     $particulars = ['DOWNPAYMENT','TUITION FEE','BACK ACCOUNT','RESERVATION FEE (Basic Education)','RESERVATION FEE (College)','ACTIVITY FEE','ADDING/DROPPING FEE','AUTHENTICATION','CAV','CERTIFICATION','COMPREHENSIVE EXAM','COPY OF GRADES','DIPLOMA','GOOD MORAL','TRANSCRIPT OF RECORDS','YEARBOOK','CUSTOM - Type Below'];
 }
 
+// School year options are managed in Admin > School Years (past, present, future).
+$schoolYears = function_exists('getPaymentSchoolYears') ? getPaymentSchoolYears($con) : [];
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 <div style="max-width:900px;margin:0 auto">
@@ -168,7 +171,9 @@ require_once __DIR__ . '/includes/header.php';
             <div class="field" id="field-sy"><label>For School Year <span style="color:var(--err)">*</span></label>
               <select name="syfrom" id="syfrom" required>
                 <option value="">Select school year...</option>
-                <?php $d=date("Y"); while($d>=1980){$c=$d+1; echo '<option value="'.$d."-".$c.'">'.$d."-".$c.'</option>'; $d--;} ?>
+                <?php foreach($schoolYears as $sy): ?>
+                  <option value="<?= htmlspecialchars($sy['school_year']) ?>" <?= (($_POST['syfrom'] ?? '') === $sy['school_year']) ? 'selected' : '' ?>><?= htmlspecialchars($sy['school_year']) ?></option>
+                <?php endforeach; ?>
               </select>
             </div>
             <div class="field" id="field-sem"><label>For Semester <span style="color:var(--err)">*</span></label>

@@ -104,6 +104,7 @@ if ($r) $totalReturn = (int)mysqli_fetch_assoc($r)['c'];
   <a href="<?= $payments_base ?>admin/users">Users</a>
   <a href="<?= $payments_base ?>admin/students">Student Management</a>
   <a href="<?= $payments_base ?>admin/monitoring">Payment Monitoring</a>
+  <a href="<?= $payments_base ?>admin/school_years">School Years</a>
   <a href="<?= $payments_base ?>admin/qr">QR Codes</a>
   <a href="<?= $payments_base ?>admin/backup" class="active">Backup Portal</a>
   <a href="<?= $payments_base ?>admin/logout" class="admin-tab-logout">Logout</a>

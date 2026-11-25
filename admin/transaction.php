@@ -122,6 +122,7 @@ $payments_base = $GLOBALS['payments_base'] ?? '/';
   <a href="<?= $payments_base ?>admin/users">Users</a>
   <a href="<?= $payments_base ?>admin/students">Student Management</a>
   <a href="<?= $payments_base ?>admin/monitoring">Payment Monitoring</a>
+  <a href="<?= $payments_base ?>admin/school_years">School Years</a>
   <a href="<?= $payments_base ?>admin/transaction" class="active">OR Settlement</a>
   <a href="<?= $payments_base ?>admin/qr">QR Codes</a>
   <a href="<?= $payments_base ?>admin/backup">Backup Portal</a>
